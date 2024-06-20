@@ -1,1 +1,83 @@
-# sorting-code
+============TABEL HEADER=============				
+
+<thead>
+                                    <tr>
+                                        <th colspan="4">
+                                            <input type="text" name="search" class="form-control" placeholder="Cari...">
+                                        </th>
+                                        <th>
+                                            <select class="form-control kelas search">
+                                                <option value="">--PILIH TINGKAT KELAS--</option>
+                                                <option>X</option>
+                                                <option>XI</option>
+                                                <option>XII</option>
+                                            </select>
+                                        </th>
+                                        <th>
+                                            <select class="form-control jk search">
+                                                <option value="">--PILIH JENIS KELAMIN--</option>
+                                                <option value="L">Laki-Laki</option>
+                                                <option value="P">Perempuan</option>
+                                            </select>
+                                        </th>
+                                        <th>
+                                            <select class="form-control sort" id="sort">
+                                                <option value="">--SORT BY--</option>
+                                                <option value="nis">NIS</option>
+                                                <option value="nama">Nama</option>
+                                                <option value="tingkat_kelas">Tingkat Kelas</option>
+                                                <option value="jenis_kelamin">Jenis Kelamin</option>
+                                            </select>
+                                        </th>
+                                        <th>
+                                            <select class="form-control order" id="order">
+                                                <option value="asc">Ascending</option>
+                                                <option value="desc">Descending</option>
+                                            </select>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th width="10px"><input type="checkbox" id="checkall" /> </th>
+                                        <th width="10px" class="text-center">No</th>
+                                        <th>NIS</th>
+                                        <th>Nama Santri</th>
+                                        <th class="text-center">Tingkat Kelas</th>
+                                        <th class="text-center">Jenis Kelamin</th>
+                                        <th width="5%" colspan="2" class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+==========CONTROLLER================
+
+public function search(Request $request)
+{
+    $key = $request->kunci;
+    $tingkat = $request->kelas;
+    $jk = $request->jk;
+    $sort = $request->sort;
+    $order = $request->order;
+
+    $resource = new Siswa;
+
+    if ($key != "") {
+        $resource = $resource->where(function($like) use ($key) {
+            $like->where('nis', 'like', '%'.$key.'%')
+                 ->orWhere('nama', 'like', '%'.$key.'%');
+        });
+    }
+    if ($tingkat != "") {
+        $resource = $resource->where('tingkat_kelas', $tingkat);
+    }
+    if ($jk != "") {
+        $resource = $resource->where('jenis_kelamin', $jk);
+    }
+    if ($sort && $order) {
+        $resource = $resource->orderBy($sort, $order);
+    }
+
+    $resource = $resource->paginate(10);
+
+    if (count($resource) == 0) {
+        echo "<td colspan='9' class='text-center'>Tidak ada data</td>";
+    }
+=====================ROUTER==============
+Route::post('/siswa/search/', 'SiswaController@search');
